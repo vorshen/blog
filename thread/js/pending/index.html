@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .wrap > div {
+            width: 140px;
+            height: 30px;
+            line-height: 30px;
+            display: inline-block;
+            background-color: #d3d3d3;
+            margin-right: 20px;
+            border-radius: 2px;
+            text-align: center;
+            color: rgba(0,0,0,0.8);
+            cursor: pointer;
+        }
+        .wrap > div:active {
+            background-color: #dfdfdf;
+        }
+
+        .boxs > div {
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+            background-color: #ec4e4e;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div id="main" class="main">单线程卡住 5s</div>
+        <div id="thread" class="thread">新启线程卡住 5s</div>
+    </div>
+    <div class="boxs">
+        <h4>
+            HOVER 可以感受交互响应
+        </h4>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+    </div>
+    <div class="time">
+        <h4>
+            1s heartbeat
+        </h4>
+        <div class="heartbeat"></div>
+    </div>
+    <script>
+        const boxs = document.getElementsByClassName('box');
+        
+        for (let box of boxs) {
+            box.onmouseenter = () => {
+                box.style.transform = `translateY(-10px)`;
+            };
+
+            box.onmouseleave = () => {
+                box.style.transform = `translateY(0px)`;
+            };
+        }
+
+        const heartbeat = document.getElementsByClassName('heartbeat')[0];
+        let count = 0;
+        setInterval(() => {
+            count++;
+            heartbeat.innerHTML = count;
+        }, 1000);
+    </script>
+    <script src="./main.js"></script>
+</body>
+</html>
