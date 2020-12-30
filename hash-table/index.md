@@ -162,16 +162,17 @@ A: **对于冲突的情况，已经有了成熟的解决方案，主要方案有
 3⃣ 往后寻找到 entry=3，匹配，返回  
 
 这里有几个问题
-1. 数组长度不够了怎么办  
+1. **数组长度不够了怎么办**  
 *当装载因子变成1的时候，无论怎么寻址，对应位非空，空间已经不够用了。那时候我们就得重新申请更长的数组长度，这个过程一般称为 rehash*。
 
-2. 一直查找不到的情况下，会不会死循环  
+2. **一直查找不到的情况下，会不会死循环**  
 *不会死循环，当寻找到空位置或者原点的时候，就认为不在表中*。
 
-3. 如何确保不会取错  
+3. **如何确保不会取错**  
 *因为 entry 甚至 hashKey 都可能存在冲突，所以切记不能只存一个 value。key(原始 key，因为 hashKey 可能已经冲突了)也需要存，比对的时候需要比对 key*。
 
-4. 删除导致的空，会影响寻址的地址，这里用个图举例  
+4. **删除导致的空，会影响寻址的地址，这里用个图举例**
+
 首先插入C，但是发现 entry=1 存在，所以真实放到了 entry=2  
 ![插入C](./assets/3-1.png)
 
@@ -197,19 +198,22 @@ A: **对于冲突的情况，已经有了成熟的解决方案，主要方案有
 v8 的 HashTable 的开头注释。
 
 ### 链表法
-先用图来讲解下
-![链表法查找元素](./assets/5.png)
-(*链表法查找元素*)
-0⃣ 首先这里增加了一个桶(bucket)的概念，数组里面每一位是一个桶(链表)，不再直接存 key-value
-1⃣ A元素计算出 entry=1，将其放入到对应的桶中
-2⃣ B元素计算出 entry=2，将其放入到对应的桶中
-3⃣ C元素计算出 entry=1，继续将其放入到对应的桶中（链表长度为2）
+
+先用图来讲解下链表法查找元素  
+![链表法查找元素](./assets/5.png)  
+0⃣ 首先这里增加了一个桶(bucket)的概念，数组里面每一位是一个桶(链表)，不再直接存 key-value  
+1⃣ A元素计算出 entry=1，将其放入到对应的桶中  
+2⃣ B元素计算出 entry=2，将其放入到对应的桶中  
+3⃣ C元素计算出 entry=1，继续将其放入到对应的桶中(链表长度为2)  
 
 查找的过程就不画图了，一句话概括就是：**先查找数组索引，再遍历链表**
 
-我们对比一下开放寻址法，似乎链表法更优势，因为它不存在「数组长度不够」的问题。但是，**rehash 仍然会进行！！**因为用 HashTable 是为了它迷人的 O(1) 时间复杂度，当装载因子大于1的时候，**虽然链表法下不一定冲突**，但是后续的插入、查找操作都有大概率变成在链表上进行，时间复杂度降为 O(n)，这和我们初衷背道而驰了。
+我们对比一下开放寻址法，似乎链表法更优势，因为它不存在「数组长度不够」的问题。  
+但是，**rehash 仍然会进行！！**因为用 HashTable 是为了它迷人的 O(1) 时间复杂度，当装载因子大于1的时候，**虽然链表法下不一定冲突**，但是后续的插入、查找操作都有大概率变成在链表上进行，时间复杂度降为 O(n)，这和我们初衷背道而驰了。
 
-redis 中就是采取的链表法，v8 中也有部分采用了，后面细说。还有一些其他的解决方案这里就不展开了，感兴趣的同学可以自行了解。
+redis 中就是采取的链表法，v8 中也有部分采用了，后面细说。
+
+还有一些其他的解决冲突的方案这里就不展开了，感兴趣的同学可以自行了解。
 
 ## v8 中的 HashTable
 刚刚提到了，v8 中的 HashTable 有使用开放寻址法的，也有使用链表法的，我们先讲一下开放寻址法相关的使用。
@@ -220,23 +224,21 @@ redis 中就是采取的链表法，v8 中也有部分采用了，后面细说�
 const yori = new Array(1000);
 const yussica = new Array(1001);
 ```
-上面代码就是定义了两个空数组，长度分别是 1000 和 1001，此时我们看一下内存的情况
-![yori 内存](./assets/6.png)
+上面代码就是定义了两个空数组，长度分别是 1000 和 1001，此时我们看一下内存的情况  
+![yori 内存](./assets/6.png)  
 ![yussica 内存](./assets/7.png)
 
 可以看到 length 多的那个数组，大小大了 4b，读者也可以自行修改长度，发现规律就是 length+1 = 4b。然鹅，当数组长度大到一定大小之后就不生效了！！
-
 ```
 const yori = new Array(33554432);
 const yussica = new Array(33554433);
 ```
-内存结构变成了这样
-![yori 内存](./assets/8.png)
-![yussica 内存](./assets/9.png)
-
+内存结构变成了这样  
+![yori 内存](./assets/8.png)  
+![yussica 内存](./assets/9.png)  
 可以看到 yori 数组还是很大，基本上还是满足刚刚的规律的。但是！yussica 数组占用空间变得很小了，不过使用起来并没有感觉到什么差异，这是为什么呢？
 
-因为当数组长度超过 32 * 1024 * 1024 时，JSArray 的内部实现，会由 FastElement 模式（FixArray 实现），变成 SlowElement 模式（HashTable 实现）
+因为当数组长度超过 32 * 1024 * 1024 时，JSArray 的内部实现，会由 FastElement 模式（FixArray 实现），变成 SlowElement 模式（HashTable 实现）  
 下面是 v8 对 JSArray 的注释
 ```
 // The JSArray describes JavaScript Arrays
@@ -259,7 +261,6 @@ yussica[2] = 2;
 console.log('End');
 ```
 代码很简单，肯定看的懂，下面看 log 情况
-
 ```
 Start
 [v8][JSArray::SetLength], prepare, new_length: 111111111 
@@ -289,20 +290,21 @@ Start
 End
 ```
 *这里标注出了内部的方法名，感兴趣的同学可以自行查阅路径*
-因为 v8 继承非常的多，代码跳跃性太强，从上面可以看到又是 JSObject、又是 Dictionary、又是 HashTable 的。如果想把这里完全讲清楚，一篇文章远远不够，所以这里给一个缩减版的 UML 图，只涉及到数组的一个 push 操作所用到的。
+
+因为 v8 继承非常的多，代码跳跃性太强，从上面可以看到又是 JSObject、又是 Dictionary、又是 HashTable 的。如果想把这里完全讲清楚，一篇文章远远不够，所以这里给一个缩减版的 UML 图，只涉及到数组的一个 push 操作所用到的。  
 ![缩减版 UML](./assets/10.png)
 
-本身调用的入口在 JSObject 上，而 JSObject 可能是多种类型，所以这里通过 Kind 找到了对应的 Accessor(DictionaryElementsAccessor)，再去走到 NumberDictionary 去 Add。NumberDictionary 就是 HashTable 的派生类之一。
+本身调用的入口在 JSObject 上，而 JSObject 可能是多种类型，所以这里通过 Kind 找到了对应的 Accessor(DictionaryElementsAccessor)，再去走到 NumberDictionary 去 Add。  NumberDictionary 就是 HashTable 的派生类之一。
 
-然后关于 HashTable 内部的内存分布这里也给一下，直接看代码容易绕晕，对照着图看就会清晰一下。
+然后关于 HashTable 内部的内存分布这里也给一下，直接看代码容易绕晕，对照着图看就会清晰一下。  
 ![HashTable 内存分布](./assets/11.png)
 
-其实理清了类之间的关系（**或者只关心流程，不要在乎在哪调用的**），这里添加元素的流程和之前说的一致
+其实理清了类之间的关系（**或者只关心流程，不要在乎在哪调用的**），这里添加元素的流程和之前说的一致  
 1. 传入 key-value，这里 key 就是数组索引，分别对应 0、1、2
 2. 计算 hashKey，结果分别是 993088831、732518952、742761112
 3. 计算 entry，结果分别是 3、0、1
-**这里注意了！在 Capacity 为 4 的情况下，直接和 Mask 与运算得到的结果是如下的**
-![运算结果](./assets/12.png)
+**这里注意了！在 Capacity 为 4 的情况下，直接和 Mask 与运算得到的结果是如下的**  
+![运算结果](./assets/12.png)  
 所以 index:742761112 最终到 entry:1 就是开放寻址法起到了作用，核心具体代码如下
 ```
 template <typename Derived, typename Shape>
@@ -329,7 +331,8 @@ inline static InternalIndex NextProbe(InternalIndex last, uint32_t number,
   return InternalIndex((last.as_uint32() + number) & (size - 1));
 }
 ```
-其中 FirstProbe 很好理解，找到第一次 entry 可能的位置，如果发现位置已经有 key 了，那么就循环执行 NextProbe。前面我们相当于通过 ++ 来执行 NextProbe 的，v8 这里步长会增大。v8 丝毫不担心出现死循环，因为这一行注释说的很清楚
+其中 FirstProbe 很好理解，找到第一次 entry 可能的位置，如果发现位置已经有 key 了，那么就循环执行 NextProbe。  
+前面我们相当于通过 ++ 来执行 NextProbe 的，v8 这里步长会增大。v8 丝毫不担心出现死循环，因为这一行注释说的很清楚  
 *EnsureCapacity will guarantee the hash table is never full.*
 
 EnsureCapacity 就是通过 rehash 来保证的，具体怎么做的我们研究一下，再回到 js 代码
@@ -394,16 +397,17 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
   new_table.SetNumberOfDeletedElements(0);
 }
 ```
-看这段代码，核心就是标注出来的三个 set，可以结合之前发的 HashTable 内存结构图对照查看。
-1⃣ 拷贝 前缀大小
-2⃣ 拷贝 shape 中的 key
-3⃣ 拷贝 shape 中的 value(按字节拷贝)
+看这段代码，核心就是标注出来的三个 set，可以结合之前发的 HashTable 内存结构图对照查看。  
+1⃣ 拷贝 前缀大小  
+2⃣ 拷贝 shape 中的 key  
+3⃣ 拷贝 shape 中的 value(按字节拷贝)  
 
 ### v8 中的链表法
 之前通过 js 超大数组，v8 将其转成了 NumberDictionary。NumberDictionary 底层是用开放寻址法实现的 HashTable，那什么是用链表法实现的 HashTable 呢？
-我们不卖关子了，ES6 中的 Set 和 Map 就是用链表法实现的 HashTable，内部类是 OrderedHashTable。或许你已经对 *Ordered* 关键字开始疑惑了，不过不用担心，让我们一步一步分析。
 
-很多语言都有 Map，比如 C++11 标准库就提供了 map 和 unordered_map，区别就是有无序。
+我们不卖关子了，ES6 中的 Set 和 Map 就是用链表法实现的 HashTable，内部类是 OrderedHashTable。或许你已经对 *Ordered* 关键字开始疑惑了，不过不用担心，让我们一步一步分析。  
+
+很多语言都有 Map，比如 C++11 标准库就提供了 map 和 unordered_map，区别就是有无序。  
 ```
 int main(int argc, char* argv[]) {
     unordered_map<char, int> m1;
@@ -428,15 +432,15 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 ```
-结果如图
-![排序结果](./assets/13.png)
+结果如图  
+![排序结果](./assets/13.png)  
 可以看到是按字典序排序的
 
-那 js 中的 Map 有序么？在控制台执行发现很神奇的现象是有序的，但是和 C++ 中的 map 又不太一样，它不是按照字典序，而是按照插入的顺序
-![运算结果](./assets/14.png)
+那 js 中的 Map 有序么？在控制台执行发现很神奇的现象是有序的，但是和 C++ 中的 map 又不太一样，它不是按照字典序，而是按照插入的顺序  
+![运算结果](./assets/14.png)  
 
-是不是很神奇，这里依靠的是特别的内存结构，这里给一下 OrderedHashTable 的内存分布图
-![OrderedHashTable 内存分布图](./assets/15.png)
+是不是很神奇，v8 在这里底层用的是 OrderedHashTable，这里先给一下 OrderedHashTable 的内存分布图  
+![OrderedHashTable 内存分布图](./assets/15.png)  
 这里主要讲一下 bucket 和 shape
 * buckets 的数量就是 hashkey 到 entry 的影响因素
 * shape 又三个部分组成了，多了一个 link，**这个会链到前一个相同的 entry 的 shape**
@@ -454,7 +458,6 @@ yori.set('drinkD', '乌苏');
 
 console.log('End');
 ```
-
 ```
 Start
 [v8] Set Map, key(68194992), hash(1065593762), entry(0), capacity(2) 
@@ -464,7 +467,8 @@ Start
 End
 ```
 *先给一个噩耗，v8 目前这里对 Map、Set 的写法有点乱。感兴趣看源码的同学可以直接看 js-collection.h，不建议跟执行流程，如果硬要跟，看 builtins-collections-gen.cc*
-有了之前的经验，这个应该很好理解了，核心也是三部曲，key->hashKey->entry。特别一点的就是这里默认的 bucket 数量 是2。bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。
+
+有了之前的经验，这个应该很好理解了，核心也是三部曲，key->hashKey->entry。特别一点的就是这里默认的 bucket 数量 是2。bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。  
 最核心的代码就是如下
 ```
 void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
@@ -506,12 +510,12 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
                                  SmiAdd(number_of_elements, SmiConstant(1)));
 }
 ```
-重点的说一下
-1⃣ 这个就是找到 entry
-2⃣ 理解为生成新的 shape 节点
-3⃣ 找到 shape 具体的位置(对照内存结构图)
-4⃣ 设置 link(前面分别是设置 key 和 value)
-5⃣ 更新 entry 上 bucket 最新的引用为新加进来的元素
+重点的说一下  
+1⃣ 这个就是找到 entry  
+2⃣ 理解为生成新的 shape 节点  
+3⃣ 找到 shape 具体的位置(对照内存结构图)  
+4⃣ 设置 link(前面分别是设置 key 和 value)  
+5⃣ 更新 entry 上 bucket 最新的引用为新加进来的元素  
 
 rehash 的处理和 HashTable 区别不大，这里就不展开了。
 
@@ -520,7 +524,7 @@ redis 以快著称，它内部的 dict 类就是使用 HashTable 实现的。因
 
 需要注意的是：**redis 对外暴露的接口有一个就是 Hash，但是 Hash 内部实现是 ziplist + dict，数据量不大的时候使用 ziplist，数据量大了就采用 dict。所以下面我们看代码，直接用 Set 来讲解方便点（然鹅 Set 内部实现是 intSet + dict，所以跑 demo 的时候需要用 string，不能是 int）**
 
-首先是 redis 中和 dict 相关的几个比较重要的数据结构
+首先是 redis 中和 dict 相关的几个比较重要的数据结构  
 1. dickType —— 通过自定义的方式，让 dict 可以支持任何数据结构的 key 和 value
 ```
 typedef struct dictType {
@@ -533,11 +537,11 @@ typedef struct dictType {
     int (*expandAllowed)(size_t moreMem, double usedRatio);
 } dictType;
 ```
-hashFunction 看名字+出入参应该就知道作用了
-keyDup、valDup 发生拷贝操作时可以执行（一般是深拷贝），如果是 nullptr 就地址拷贝。具体可见 dict.h 中 dictSetKey、dictSetVal
-keyCompare 用来比较两个 key，如果是 nullptr 就是直接地址比较。具体可见 dict.h 中 dictCompareKeys
-keyDestructor、valDestructor 是定义了 key 、value 的析构函数。具体可见 dict.h 中 dictFreeKey、dictFreeVal
-expandAllowed 当 dict 需要扩大时，是否允许，如果是 nullptr，默认允许。具体可见 dict.c 中 dictTypeExpandAllowed
+hashFunction 看名字+出入参应该就知道作用了  
+keyDup、valDup 发生拷贝操作时可以执行（一般是深拷贝），如果是 nullptr 就地址拷贝。具体可见 dict.h 中 dictSetKey、dictSetVal  
+keyCompare 用来比较两个 key，如果是 nullptr 就是直接地址比较。具体可见 dict.h 中 dictCompareKeys  
+keyDestructor、valDestructor 是定义了 key 、value 的析构函数。具体可见 dict.h 中 dictFreeKey、dictFreeVal  
+expandAllowed 当 dict 需要扩大时，是否允许，如果是 nullptr，默认允许。具体可见 dict.c 中 dictTypeExpandAllowed  
 
 可以看到，通过 dictType，可以实现自定义的 key、value 组合，下面就是一个🌰
 ```
@@ -566,10 +570,10 @@ typedef struct dict {
     unsigned long iterators; /* number of iterators currently running */
 } dict;
 ```
-type 刚刚说过了
-privdata 直译是私有数据，创建 dict 时传入，然后在调用上面说的那些 keyDup、valDup 等函数会传回
-dictht 重点！dict hashTable，也是 dict 实现的核心，**注意，可以看到这里是个数组，长度为2，这是为了更优雅的增量 rehash，待会会看到精妙所在**
-rehashidx 目前 rehash 的进度
+type 刚刚说过了  
+privdata 直译是私有数据，创建 dict 时传入，然后在调用上面说的那些 keyDup、valDup 等函数会传回  
+dictht 重点！dict hashTable，也是 dict 实现的核心，**注意，可以看到这里是个数组，长度为2，这是为了更优雅的增量 rehash，待会会看到精妙所在**  
+rehashidx 目前 rehash 的进度  
 iterators 迭代器，略
 
 3. dictht —— dict 使用的 HashTable
@@ -581,10 +585,10 @@ typedef struct dictht {
     unsigned long used;
 } dictht;
 ```
-table 之前说过 redis 的 hashTable 采取的是链表法，dictEntry 就是链表结构
-size table 的长度
-sizemask 计算 hashkey 到 entry 用的，恒等于 size-1。和上面说的 v8 做法一致
-used 目前 hashTable 中已有的元素数量，可以与 size 计算出来 loadFactor
+table 之前说过 redis 的 hashTable 采取的是链表法，dictEntry 就是链表结构  
+size table 的长度  
+sizemask 计算 hashkey 到 entry 用的，恒等于 size-1。和上面说的 v8 做法一致  
+used 目前 hashTable 中已有的元素数量，可以与 size 计算出来 loadFactor  
 
 4. dictEntry —— 链表中每个节点的数据结构
 ```
@@ -599,9 +603,9 @@ typedef struct dictEntry {
     struct dictEntry *next;
 } dictEntry;
 ```
-key 略
-v value，这里使用了 union 来优化存储
-next 略
+key 略  
+v value，这里使用了 union 来优化存储  
+next 略  
 
 数据结构看下来，其实还是挺简单的，至少对比 v8 的清晰明了太多。下面重点来说说 redis 的**增量 rehash**，这也是 redis 追求极致性能的一种体现
 
@@ -609,13 +613,12 @@ next 略
 * 重新申请内存大小
 * 迁移数据 —— 拷贝/移动成本、对所有 key 进行 hash 重算
 
-redis 作为 server 端服务，追求的快速的响应时间，越快越好，但如果某次请求，命中了 rehash，那意味着会增大单个请求响应时间，这是不能接受的。
-所以 redis 的做法，是将可能的单次较长的 rehash 时间，打散开，平均到每个请求中去，下面看具体的实现
-
-我们如下的方式操作 redis
+redis 作为 server 端服务，追求的快速的响应时间，越快越好，但如果某次请求，命中了 rehash，那意味着会增大单个请求响应时间，这是不能接受的。  
+所以 redis 的做法，是将可能的单次较长的 rehash 时间，打散开，平均到每个请求中去，下面看具体的实现。  
+我们如下的方式操作 redis  
 ![操作步骤](./assets/16.png)
 
-然后可以得到这样的结果，我整理一下
+然后可以得到这样的结果，我整理了一下  
 ```
 SADD yori a
 [redis] saddCommand 
@@ -691,8 +694,9 @@ SADD yori h
 [redis] dict added, ht[0].size: 8, ht[0].used: 8
 [redis] dict added, ht[1].size: 0, ht[1].used: 0
 ```
-我依然在源码中将关键节点的信息打了出来，然后先文字分析，再画图总结一下
-前面 a,b,c,d 的设置没有什么好说的，还是之前的流程: key(这里直接用 value) -> hashKey -> entry。可以看到 12257755146001261976 & 3 = 0，36062017759904132 & 3 = 0，这里出现了两个相同的 entry，不过没关系，因为采用的是链表法。
+我依然在源码中将关键节点的信息打了出来，然后先文字分析，再画图总结一下  
+前面 a,b,c,d 的设置没有什么好说的，还是之前的流程:   
+key(这里直接用 value) -> hashKey -> entry。可以看到 12257755146001261976 & 3 = 0，36062017759904132 & 3 = 0，这里出现了两个相同的 entry，不过没关系，因为采用的是链表法。
 
 核心代码如下
 ```
@@ -724,31 +728,31 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing)
     return entry;
 }
 ```
-这里代码并不复杂，但是由于变量命名和我们前文中概念有点冲突，所以看起来可能有点乱
-1⃣ 找到了一个 index(文中 entry 概念)，数组的位置(位置里每一个元素是一个链表 dictEntry)
-2⃣ 找到对应的 HashTable，我们不在 Rehash 中，所以就是 ht[0]
-3⃣ 生成一个新的链表节点
-4⃣、5⃣ 将新的链表节点添加到链表的首位
-6⃣ 将 key 保存到链表节点上
+这里代码并不复杂，但是由于变量命名和我们前文中概念有点冲突，所以看起来可能有点乱  
+1⃣ 找到了一个 index(文中 entry 概念)，数组的位置(位置里每一个元素是一个链表 dictEntry)  
+2⃣ 找到对应的 HashTable，我们不在 Rehash 中，所以就是 ht[0]  
+3⃣ 生成一个新的链表节点  
+4⃣、5⃣ 将新的链表节点添加到链表的首位  
+6⃣ 将 key 保存到链表节点上  
 
-可以结合下面的图来看一下
-![](./assets/17.png)
-![](./assets/18.png)
-![](./assets/19.png)
-
+可以结合下面的图来看一下  
+![](./assets/17.png)  
+![](./assets/18.png)  
+![](./assets/19.png)  
 *之所以添加到表头，也是 redis 认为最近添加的元素，被访问到的几率大一些*
 
-a,b,c,d 的设置讲清楚了，再看下面 e,f,g,h 的设置，这里涉及到增量 rehash 了，稍微复杂一些。我们先继续看图片流程，理解了流程，看代码就清晰了。
-![](./assets/20.png)
-![](./assets/21.png)
-![](./assets/22.png)
-![](./assets/23.png)
-![](./assets/24.png)
-![](./assets/25.png)
-![](./assets/26.png)
-![](./assets/27.png)
-![](./assets/28.png)
-![](./assets/29.png)
+a,b,c,d 的设置讲清楚了，再看下面 e,f,g,h 的设置，这里涉及到**增量 rehash** 了，稍微复杂一些。  
+我们先继续看图片流程，理解了流程，看代码就清晰了。  
+![](./assets/20.png)  
+![](./assets/21.png)  
+![](./assets/22.png)  
+![](./assets/23.png)  
+![](./assets/24.png)  
+![](./assets/25.png)  
+![](./assets/26.png)  
+![](./assets/27.png)  
+![](./assets/28.png)  
+![](./assets/29.png)  
 
 再贴一下 rehash 的核心代码
 ```
@@ -797,16 +801,16 @@ int dictRehash(dict *d, int n) {
     return 1;
 }
 ```
-这代码非常清晰，稍微说一下就行
-1⃣ n 就是这次 rehash 推动的步数，默认是 1
-2⃣ 遇到空桶(空链表)，就往后递增
-3⃣ rehash，旧的桶转移到新的桶，跑完整个链表
-4⃣ 检测 table[0] 是不是 rehash 结束了，如果结束了，就将 table[1] 赋给 table[0]
+这代码非常清晰，稍微说一下就行  
+1⃣ n 就是这次 rehash 推动的步数，默认是 1  
+2⃣ 遇到空桶(空链表)，就往后递增  
+3⃣ rehash，旧的桶转移到新的桶，跑完整个链表  
+4⃣ 检测 table[0] 是不是 rehash 结束了，如果结束了，就将 table[1] 赋给 table[0]  
 
 **注意：不仅仅是插入，当在 rehash 状态时，任何的操作，比如是 SISMEMBER 这种读操作，也会推动 rehash 的进度**，感兴趣的同学，可以自己再看看 dict 中其他接口的实现，都比较清晰，主要归功于 dict 内部所用的 HashTable 简单明了。
 
 ## 总结
 我们从 HashTable 的原理入手，了解掌握了实现一个 HashTable 中的难题，最后一起看了一下 v8 和 redis 中 HashTable 相关的代码。总的来说 redis 的代码简单易懂一些，推荐入门同学先看 redis，当然直接啃 v8 也是可以滴。
 
-时间仓促，一些细节可能会有偏差，如果有错欢迎斧正～
+时间仓促，一些细节可能会有偏差，如果有错欢迎斧正～  
 其他有问题的同学可以留言讨论～
