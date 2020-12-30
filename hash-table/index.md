@@ -476,7 +476,8 @@ End
 *先给一个噩耗，v8 目前这里对 Map、Set 的写法有点乱。感兴趣看源码的同学可以直接看 js-collection.h，不建议直接跟执行流程，如果硬要跟，看 builtins-collections-gen.cc*
 
 有了之前的经验，这个应该很好理解了，核心也是三部曲，key->hashKey->entry。  
-特别一点的就是这里默认的 bucket 数量 是2。bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。
+特别一点的就是这里默认的 bucket 数量 是2。
+bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。
 
 最核心的代码就是如下
 ```
