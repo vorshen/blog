@@ -148,18 +148,18 @@ A: **对于冲突的情况，已经有了成熟的解决方案，主要方案有
 我们用下面这个图来讲解开放寻址法插入元素的过程  
 ![开放寻址法插入元素](./assets/3.png)
 
-1⃣ A元素计算出 entry=1，对应位空，插入到数组中  
-2⃣ B元素计算出 entry=2，对应位空，插入到数组中  
-3⃣ C元素计算出 entry=1，对应位存在，无法插入，往后寻找  
-4⃣ 往后寻找到 entry=2，对应位存在，无法插入，继续往后寻找  
-5⃣ 往后寻找到 entry=3，对应位空，插入到数组中
+1⃣️ A元素计算出 entry=1，对应位空，插入到数组中  
+2⃣️ B元素计算出 entry=2，对应位空，插入到数组中  
+3⃣️ C元素计算出 entry=1，对应位存在，无法插入，往后寻找  
+4⃣️ 往后寻找到 entry=2，对应位存在，无法插入，继续往后寻找  
+5⃣️往后寻找到 entry=3，对应位空，插入到数组中
 
 查找的过程也是类似的，以查找C元素为例  
 ![开放寻址法查找元素](./assets/4.png)
 
-1⃣ 计算出 entry=1，不匹配，往后寻找  
-2⃣ 往后寻找到 entry=2，不匹配，继续往后寻找  
-3⃣ 往后寻找到 entry=3，匹配，返回  
+1⃣️ 计算出 entry=1，不匹配，往后寻找  
+2⃣️ 往后寻找到 entry=2，不匹配，继续往后寻找  
+3⃣️ 往后寻找到 entry=3，匹配，返回  
 
 这里有几个问题
 1. **数组长度不够了怎么办**  
@@ -202,14 +202,15 @@ v8 的 HashTable 的开头注释。
 先用图来讲解下链表法查找元素  
 ![链表法查找元素](./assets/5.png)  
 0⃣ 首先这里增加了一个桶(bucket)的概念，数组里面每一位是一个桶(链表)，不再直接存 key-value  
-1⃣ A元素计算出 entry=1，将其放入到对应的桶中  
-2⃣ B元素计算出 entry=2，将其放入到对应的桶中  
-3⃣ C元素计算出 entry=1，继续将其放入到对应的桶中(链表长度为2)  
+1⃣️ A元素计算出 entry=1，将其放入到对应的桶中  
+2⃣️ B元素计算出 entry=2，将其放入到对应的桶中  
+3⃣️ C元素计算出 entry=1，继续将其放入到对应的桶中(链表长度为2)  
 
 查找的过程就不画图了，一句话概括就是：**先查找数组索引，再遍历链表**
 
 我们对比一下开放寻址法，似乎链表法更优势，因为它不存在「数组长度不够」的问题。  
-但是，**rehash 仍然会进行！！**因为用 HashTable 是为了它迷人的 O(1) 时间复杂度，当装载因子大于1的时候，**虽然链表法下不一定冲突**，但是后续的插入、查找操作都有大概率变成在链表上进行，时间复杂度降为 O(n)，这和我们初衷背道而驰了。
+但是，**rehash 仍然会进行**！因为用 HashTable 是为了它迷人的 O(1) 时间复杂度。  
+当装载因子大于1的时候，**虽然链表法下不一定冲突**，但是后续的插入、查找操作都有大概率变成在链表上进行，时间复杂度降为 O(n)，这和我们初衷背道而驰了。
 
 redis 中就是采取的链表法，v8 中也有部分采用了，后面细说。
 
@@ -228,7 +229,8 @@ const yussica = new Array(1001);
 ![yori 内存](./assets/6.png)  
 ![yussica 内存](./assets/7.png)
 
-可以看到 length 多的那个数组，大小大了 4b，读者也可以自行修改长度，发现规律就是 length+1 = 4b。然鹅，当数组长度大到一定大小之后就不生效了！！
+可以看到 length 多的那个数组(yussica)，我 length 多点，占用多点空间没毛病。  
+然鹅，当数组长度大到一定大小之后就不生效了！！
 ```
 const yori = new Array(33554432);
 const yussica = new Array(33554433);
@@ -236,7 +238,8 @@ const yussica = new Array(33554433);
 内存结构变成了这样  
 ![yori 内存](./assets/8.png)  
 ![yussica 内存](./assets/9.png)  
-可以看到 yori 数组还是很大，基本上还是满足刚刚的规律的。但是！yussica 数组占用空间变得很小了，不过使用起来并没有感觉到什么差异，这是为什么呢？
+可以看到 yori 数组还是很大，基本上还是满足刚刚的规律的。  
+但是！yussica 数组占用空间变得很小了，不过使用起来并没有感觉到什么差异，这是为什么呢？
 
 因为当数组长度超过 32 * 1024 * 1024 时，JSArray 的内部实现，会由 FastElement 模式（FixArray 实现），变成 SlowElement 模式（HashTable 实现）  
 下面是 v8 对 JSArray 的注释
@@ -248,12 +251,13 @@ const yussica = new Array(33554433);
 //    - slow, backing storage is a HashTable with numbers as keys.
 ```
 
-FastElement 模式我们不讨论，主要看 SlowElement 模式。我在 v8 中增加了一些关键节点的 log，然后我们执行一段 js 代码，看一下 v8 干了什么
+FastElement 模式我们不讨论，主要看 SlowElement 模式。
+我在 v8 中增加了一些关键节点的 log，然后我们执行一段 js 代码，看一下 v8 干了什么
 ```
 console.log('Start');
 
 const yussica = [];
-yussica.length = 111111111;
+yussica.length = 111111111; // 整个大数组，命中 SlowElement 模式
 yussica[0] = 0;
 yussica[1] = 1;
 yussica[2] = 2;
@@ -299,13 +303,14 @@ End
 然后关于 HashTable 内部的内存分布这里也给一下，直接看代码容易绕晕，对照着图看就会清晰一下。  
 ![HashTable 内存分布](./assets/11.png)
 
-其实理清了类之间的关系（**或者只关心流程，不要在乎在哪调用的**），这里添加元素的流程和之前说的一致  
+其实理清了类之间的关系（**或者只关心流程，不要在乎具体函数调用**），这里添加元素的流程和之前说的一致  
 1. 传入 key-value，这里 key 就是数组索引，分别对应 0、1、2
 2. 计算 hashKey，结果分别是 993088831、732518952、742761112
 3. 计算 entry，结果分别是 3、0、1
-**这里注意了！在 Capacity 为 4 的情况下，直接和 Mask 与运算得到的结果是如下的**  
+**这里注意了！在 Capacity 为 4 的情况下，直接 Mask 与运算得到的结果是如下的**  
 ![运算结果](./assets/12.png)  
-所以 index:742761112 最终到 entry:1 就是开放寻址法起到了作用，核心具体代码如下
+
+所以 index:742761112 最终到 entry:1 就是开放寻址法起到了作用，核心具体代码如下：
 ```
 template <typename Derived, typename Shape>
 InternalIndex HashTable<Derived, Shape>::FindInsertionEntry(IsolateRoot isolate,
@@ -333,7 +338,7 @@ inline static InternalIndex NextProbe(InternalIndex last, uint32_t number,
 ```
 其中 FirstProbe 很好理解，找到第一次 entry 可能的位置，如果发现位置已经有 key 了，那么就循环执行 NextProbe。  
 前面我们相当于通过 ++ 来执行 NextProbe 的，v8 这里步长会增大。v8 丝毫不担心出现死循环，因为这一行注释说的很清楚  
-*EnsureCapacity will guarantee the hash table is never full.*
+*// EnsureCapacity will guarantee the hash table is never full.*
 
 EnsureCapacity 就是通过 rehash 来保证的，具体怎么做的我们研究一下，再回到 js 代码
 
@@ -363,7 +368,8 @@ console.log('End');
 [v8][HashTable::Rehash], old_entry(3), new_entry(4) 
 [v8][Dictionary::Add], 计算出 entry: 6 
 ```
-前面一些 log 我省略了，主要就是看一下空间不够的时候 v8 的处理。理解也挺好理解的，capacity=4 不够的时候，按2的倍数扩张，变成 8，然后 rehash。可以看到之前 entry 的位置发生了变化，从之前 0-3 的空间变化到了 0-7 的空间。
+前面一些 log 我省略了，主要就是看一下空间不够的时候 v8 的处理。
+很清晰，capacity=4 不够的时候，按2的倍数扩张，变成 8，然后 rehash。可以看到之前 entry 的位置发生了变化，从之前 0-3 的空间变化到了 0-7 的空间。
 
 具体代码
 ```
@@ -375,7 +381,7 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
 
   // Copy prefix to new array.
   for (int i = kPrefixStartIndex; i < kElementsStartIndex; i++) {
-    new_table.set(i, get(isolate, i), mode); // 1⃣
+    new_table.set(i, get(isolate, i), mode); // 1⃣️
   }
 
   // Rehash the elements.
@@ -388,9 +394,9 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
     uint32_t hash = Shape::HashForObject(roots, k);
     uint32_t insertion_index =
         EntryToIndex(new_table.FindInsertionEntry(isolate, roots, hash));
-    new_table.set_key(insertion_index, get(isolate, from_index), mode); // 2⃣
+    new_table.set_key(insertion_index, get(isolate, from_index), mode); // 2⃣️
     for (int j = 1; j < Shape::kEntrySize; j++) {
-      new_table.set(insertion_index + j, get(isolate, from_index + j), mode); // 3⃣
+      new_table.set(insertion_index + j, get(isolate, from_index + j), mode); // 3⃣️
     }
   }
   new_table.SetNumberOfElements(NumberOfElements());
@@ -398,9 +404,9 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
 }
 ```
 看这段代码，核心就是标注出来的三个 set，可以结合之前发的 HashTable 内存结构图对照查看。  
-1⃣ 拷贝 前缀大小  
-2⃣ 拷贝 shape 中的 key  
-3⃣ 拷贝 shape 中的 value(按字节拷贝)  
+1⃣️ 拷贝 前缀大小  
+2⃣️ 拷贝 shape 中的 key  
+3⃣️ 拷贝 shape 中的 value(按字节拷贝)  
 
 ### v8 中的链表法
 之前通过 js 超大数组，v8 将其转成了 NumberDictionary。NumberDictionary 底层是用开放寻址法实现的 HashTable，那什么是用链表法实现的 HashTable 呢？
@@ -466,22 +472,24 @@ Start
 [v8] Set Map, key(68195048), hash(749864448), entry(0), capacity(2)
 End
 ```
-*先给一个噩耗，v8 目前这里对 Map、Set 的写法有点乱。感兴趣看源码的同学可以直接看 js-collection.h，不建议跟执行流程，如果硬要跟，看 builtins-collections-gen.cc*
+*先给一个噩耗，v8 目前这里对 Map、Set 的写法有点乱。感兴趣看源码的同学可以直接看 js-collection.h，不建议直接跟执行流程，如果硬要跟，看 builtins-collections-gen.cc*
 
-有了之前的经验，这个应该很好理解了，核心也是三部曲，key->hashKey->entry。特别一点的就是这里默认的 bucket 数量 是2。bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。  
+有了之前的经验，这个应该很好理解了，核心也是三部曲，key->hashKey->entry。  
+特别一点的就是这里默认的 bucket 数量 是2。bucket 的数量是 capacity(初始值4) / 极限装载因子(2)。这里不像开放寻址法，entry 完全可以相同。
+
 最核心的代码就是如下
 ```
 void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
     const TNode<OrderedHashMap> table, const TNode<Object> key,
     const TNode<Object> value, const TNode<IntPtrT> hash,
     const TNode<IntPtrT> number_of_buckets, const TNode<IntPtrT> occupancy) {
-  const TNode<IntPtrT> bucket = // 1⃣
+  const TNode<IntPtrT> bucket = // 1⃣️
       WordAnd(hash, IntPtrSub(number_of_buckets, IntPtrConstant(1)));
-  TNode<Smi> bucket_entry = CAST(UnsafeLoadFixedArrayElement( // 2⃣
+  TNode<Smi> bucket_entry = CAST(UnsafeLoadFixedArrayElement( // 2⃣️
       table, bucket, OrderedHashMap::HashTableStartIndex() * kTaggedSize));
 
   // Store the entry elements.
-  const TNode<IntPtrT> entry_start = IntPtrAdd( // 3⃣
+  const TNode<IntPtrT> entry_start = IntPtrAdd( // 3⃣️
       IntPtrMul(occupancy, IntPtrConstant(OrderedHashMap::kEntrySize)),
       number_of_buckets);
 
@@ -492,7 +500,7 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
       table, entry_start, value, UPDATE_WRITE_BARRIER,
       kTaggedSize * (OrderedHashMap::HashTableStartIndex() +
                      OrderedHashMap::kValueOffset));
-  UnsafeStoreFixedArrayElement( // 4⃣
+  UnsafeStoreFixedArrayElement( // 4⃣️
       table, entry_start, bucket_entry,
       kTaggedSize * (OrderedHashMap::HashTableStartIndex() +
                      OrderedHashMap::kChainOffset));
@@ -511,11 +519,11 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
 }
 ```
 重点的说一下  
-1⃣ 这个就是找到 entry  
-2⃣ 理解为生成新的 shape 节点  
-3⃣ 找到 shape 具体的位置(对照内存结构图)  
-4⃣ 设置 link(前面分别是设置 key 和 value)  
-5⃣ 更新 entry 上 bucket 最新的引用为新加进来的元素  
+1⃣️ 这个就是找到 entry  
+2⃣️ 理解为生成新的 shape 节点  
+3⃣️ 找到 shape 具体的位置(对照内存结构图)  
+4⃣️ 设置 link(前面分别是设置 key 和 value)  
+5⃣️更新 entry 上 bucket 最新的引用为新加进来的元素  
 
 rehash 的处理和 HashTable 区别不大，这里就不展开了。
 
@@ -710,16 +718,16 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing)
 
     /* Get the index of the new element, or -1 if
      * the element already exists. */
-    if ((index = _dictKeyIndex(d, key, dictHashKey(d,key), existing)) == -1) // 1⃣
+    if ((index = _dictKeyIndex(d, key, dictHashKey(d,key), existing)) == -1) // 1⃣️
         return NULL;
 
     /* Allocate the memory and store the new entry.
      * Insert the element in top, with the assumption that in a database
      * system it is more likely that recently added entries are accessed
      * more frequently. */
-    ht = dictIsRehashing(d) ? &d->ht[1] : &d->ht[0]; // 2⃣
-    entry = zmalloc(sizeof(*entry)); // 3⃣
-    entry->next = ht->table[index]; // 4⃣
+    ht = dictIsRehashing(d) ? &d->ht[1] : &d->ht[0]; // 2⃣️
+    entry = zmalloc(sizeof(*entry)); // 3⃣️
+    entry->next = ht->table[index]; // 4⃣️
     ht->table[index] = entry; // 5⃣
     ht->used++;
 
@@ -729,11 +737,11 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing)
 }
 ```
 这里代码并不复杂，但是由于变量命名和我们前文中概念有点冲突，所以看起来可能有点乱  
-1⃣ 找到了一个 index(文中 entry 概念)，数组的位置(位置里每一个元素是一个链表 dictEntry)  
-2⃣ 找到对应的 HashTable，我们不在 Rehash 中，所以就是 ht[0]  
-3⃣ 生成一个新的链表节点  
-4⃣、5⃣ 将新的链表节点添加到链表的首位  
-6⃣ 将 key 保存到链表节点上  
+1⃣️ 找到了一个 index(文中 entry 概念)，数组的位置(位置里每一个元素是一个链表 dictEntry)  
+2⃣️ 找到对应的 HashTable，我们不在 Rehash 中，所以就是 ht[0]  
+3⃣️ 生成一个新的链表节点  
+4⃣️、5⃣️将新的链表节点添加到链表的首位  
+6⃣️将 key 保存到链表节点上  
 
 可以结合下面的图来看一下  
 ![](./assets/17.png)  
@@ -760,19 +768,19 @@ int dictRehash(dict *d, int n) {
     int empty_visits = n*10; /* Max number of empty buckets to visit. */
     if (!dictIsRehashing(d)) return 0;
 
-    while(n-- && d->ht[0].used != 0) { // 1⃣
+    while(n-- && d->ht[0].used != 0) { // 1⃣️
         dictEntry *de, *nextde;
 
         /* Note that rehashidx can't overflow as we are sure there are more
          * elements because ht[0].used != 0 */
         assert(d->ht[0].size > (unsigned long)d->rehashidx);
-        while(d->ht[0].table[d->rehashidx] == NULL) { // 2⃣
+        while(d->ht[0].table[d->rehashidx] == NULL) { // 2⃣️
             d->rehashidx++;
             if (--empty_visits == 0) return 1;
         }
         de = d->ht[0].table[d->rehashidx];
         /* Move all the keys in this bucket from the old to the new hash HT */
-        while(de) { // 3⃣
+        while(de) { // 3⃣️
             uint64_t h;
 
             nextde = de->next;
@@ -789,7 +797,7 @@ int dictRehash(dict *d, int n) {
     }
 
     /* Check if we already rehashed the whole table... */
-    if (d->ht[0].used == 0) { // 4⃣
+    if (d->ht[0].used == 0) { // 4⃣️
         zfree(d->ht[0].table);
         d->ht[0] = d->ht[1];
         _dictReset(&d->ht[1]);
@@ -802,10 +810,10 @@ int dictRehash(dict *d, int n) {
 }
 ```
 这代码非常清晰，稍微说一下就行  
-1⃣ n 就是这次 rehash 推动的步数，默认是 1  
-2⃣ 遇到空桶(空链表)，就往后递增  
-3⃣ rehash，旧的桶转移到新的桶，跑完整个链表  
-4⃣ 检测 table[0] 是不是 rehash 结束了，如果结束了，就将 table[1] 赋给 table[0]  
+1⃣️ n 就是这次 rehash 推动的步数，默认是 1  
+2⃣️ 遇到空桶(空链表)，就往后递增  
+3⃣️ rehash，旧的桶转移到新的桶，跑完整个链表  
+4⃣️ 检测 table[0] 是不是 rehash 结束了，如果结束了，就将 table[1] 赋给 table[0]  
 
 **注意：不仅仅是插入，当在 rehash 状态时，任何的操作，比如是 SISMEMBER 这种读操作，也会推动 rehash 的进度**，感兴趣的同学，可以自己再看看 dict 中其他接口的实现，都比较清晰，主要归功于 dict 内部所用的 HashTable 简单明了。
 
