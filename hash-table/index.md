@@ -2,10 +2,10 @@
 HashTable，又称散列表，一说到这个，可能很多人第一反应就是时间复杂度O(1)！再深入一点的同学又会知道，当 hash 冲突较多的时候时间复杂度又会退化到O(n)。所以其实 HashTable 还是有很多细节的，这片文章就带大家梳理一下 HashTable 的细节，最后一起拜读一下 v8 和 redis 的 HashTable 相关源码。
 
 ## 目录
-### HashTable 原理
-### HashTable 问题与解决
-### v8 中的 HashTable
-### redis 中的 HashTable
+### [HashTable 原理](#hashtable-原理-1)
+### [HashTable 问题与解决](#hashtable-问题与解决-1)
+### [v8 中的 HashTable](#v8-中的-hashtable-1)
+### [redis 中的 HashTable](#redis-中的-hashtable-1)
 
 ## HashTable 原理
 先看一段代码
