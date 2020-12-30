@@ -1,5 +1,6 @@
 # 重学 HashTable
-HashTable，又称散列表，一说到这个，可能很多人第一反应就是时间复杂度O(1)！再深入一点的同学又会知道，当 hash 冲突较多的时候时间复杂度又会退化到O(n)。所以其实 HashTable 还是有很多细节的，这片文章就带大家梳理一下 HashTable 的细节，最后一起拜读一下 v8 和 redis 的 HashTable 相关源码。
+HashTable，又称散列表，一说到这个，可能很多人第一反应就是时间复杂度O(1)！那是不是时间复杂度永远都是O(1)呢？别人说所得 hash 碰撞又是什么呢？  
+所以其实 HashTable 还是有很多细节的，这片文章就带大家梳理一下 HashTable 的细节，最后一起拜读一下 v8 和 redis 的 HashTable 相关源码。
 
 ## 目录
 ### [HashTable 原理](#hashtable-原理-1)
@@ -381,7 +382,7 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
 
   // Copy prefix to new array.
   for (int i = kPrefixStartIndex; i < kElementsStartIndex; i++) {
-    new_table.set(i, get(isolate, i), mode); // 1⃣️
+    new_table.set(i, get(isolate, i), mode); // (1)
   }
 
   // Rehash the elements.
@@ -394,9 +395,9 @@ void HashTable<Derived, Shape>::Rehash(IsolateRoot isolate, Derived new_table) {
     uint32_t hash = Shape::HashForObject(roots, k);
     uint32_t insertion_index =
         EntryToIndex(new_table.FindInsertionEntry(isolate, roots, hash));
-    new_table.set_key(insertion_index, get(isolate, from_index), mode); // 2⃣️
+    new_table.set_key(insertion_index, get(isolate, from_index), mode); // (2)
     for (int j = 1; j < Shape::kEntrySize; j++) {
-      new_table.set(insertion_index + j, get(isolate, from_index + j), mode); // 3⃣️
+      new_table.set(insertion_index + j, get(isolate, from_index + j), mode); // (3)
     }
   }
   new_table.SetNumberOfElements(NumberOfElements());
@@ -483,13 +484,13 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
     const TNode<OrderedHashMap> table, const TNode<Object> key,
     const TNode<Object> value, const TNode<IntPtrT> hash,
     const TNode<IntPtrT> number_of_buckets, const TNode<IntPtrT> occupancy) {
-  const TNode<IntPtrT> bucket = // 1⃣️
+  const TNode<IntPtrT> bucket = // (1)
       WordAnd(hash, IntPtrSub(number_of_buckets, IntPtrConstant(1)));
-  TNode<Smi> bucket_entry = CAST(UnsafeLoadFixedArrayElement( // 2⃣️
+  TNode<Smi> bucket_entry = CAST(UnsafeLoadFixedArrayElement( // (2)
       table, bucket, OrderedHashMap::HashTableStartIndex() * kTaggedSize));
 
   // Store the entry elements.
-  const TNode<IntPtrT> entry_start = IntPtrAdd( // 3⃣️
+  const TNode<IntPtrT> entry_start = IntPtrAdd( // (3)
       IntPtrMul(occupancy, IntPtrConstant(OrderedHashMap::kEntrySize)),
       number_of_buckets);
 
@@ -500,13 +501,13 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
       table, entry_start, value, UPDATE_WRITE_BARRIER,
       kTaggedSize * (OrderedHashMap::HashTableStartIndex() +
                      OrderedHashMap::kValueOffset));
-  UnsafeStoreFixedArrayElement( // 4⃣️
+  UnsafeStoreFixedArrayElement( // (4)
       table, entry_start, bucket_entry,
       kTaggedSize * (OrderedHashMap::HashTableStartIndex() +
                      OrderedHashMap::kChainOffset));
 
   // Update the bucket head.
-  UnsafeStoreFixedArrayElement( // 5⃣
+  UnsafeStoreFixedArrayElement( // (5)
       table, bucket, SmiTag(occupancy),
       OrderedHashMap::HashTableStartIndex() * kTaggedSize);
 
@@ -718,21 +719,21 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing)
 
     /* Get the index of the new element, or -1 if
      * the element already exists. */
-    if ((index = _dictKeyIndex(d, key, dictHashKey(d,key), existing)) == -1) // 1⃣️
+    if ((index = _dictKeyIndex(d, key, dictHashKey(d,key), existing)) == -1) // (1)
         return NULL;
 
     /* Allocate the memory and store the new entry.
      * Insert the element in top, with the assumption that in a database
      * system it is more likely that recently added entries are accessed
      * more frequently. */
-    ht = dictIsRehashing(d) ? &d->ht[1] : &d->ht[0]; // 2⃣️
-    entry = zmalloc(sizeof(*entry)); // 3⃣️
-    entry->next = ht->table[index]; // 4⃣️
-    ht->table[index] = entry; // 5⃣
+    ht = dictIsRehashing(d) ? &d->ht[1] : &d->ht[0]; // (2)
+    entry = zmalloc(sizeof(*entry)); // (3)
+    entry->next = ht->table[index]; // (4)
+    ht->table[index] = entry; // (5)
     ht->used++;
 
     /* Set the hash entry fields. */
-    dictSetKey(d, entry, key); // 6⃣
+    dictSetKey(d, entry, key); // (6)
     return entry;
 }
 ```
@@ -768,19 +769,19 @@ int dictRehash(dict *d, int n) {
     int empty_visits = n*10; /* Max number of empty buckets to visit. */
     if (!dictIsRehashing(d)) return 0;
 
-    while(n-- && d->ht[0].used != 0) { // 1⃣️
+    while(n-- && d->ht[0].used != 0) { // (1)
         dictEntry *de, *nextde;
 
         /* Note that rehashidx can't overflow as we are sure there are more
          * elements because ht[0].used != 0 */
         assert(d->ht[0].size > (unsigned long)d->rehashidx);
-        while(d->ht[0].table[d->rehashidx] == NULL) { // 2⃣️
+        while(d->ht[0].table[d->rehashidx] == NULL) { // (2)
             d->rehashidx++;
             if (--empty_visits == 0) return 1;
         }
         de = d->ht[0].table[d->rehashidx];
         /* Move all the keys in this bucket from the old to the new hash HT */
-        while(de) { // 3⃣️
+        while(de) { // (3)
             uint64_t h;
 
             nextde = de->next;
@@ -797,7 +798,7 @@ int dictRehash(dict *d, int n) {
     }
 
     /* Check if we already rehashed the whole table... */
-    if (d->ht[0].used == 0) { // 4⃣️
+    if (d->ht[0].used == 0) { // (4)
         zfree(d->ht[0].table);
         d->ht[0] = d->ht[1];
         _dictReset(&d->ht[1]);
