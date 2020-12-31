@@ -547,11 +547,12 @@ void CollectionsBuiltinsAssembler::StoreOrderedHashMapNewEntry(
 rehash 的处理和 HashTable 区别不大，这里就不展开了。
 
 ## redis 中的 HashTable
-redis 以快著称，它内部的 dict 类就是使用 HashTable 实现的。因为 redis 负责的事情更纯粹，所以代码也较好理解易读很多，我们就以源码解读的方式为主
+redis 以快著称，它内部的 dict 类就是使用 HashTable 实现的。  
+因为 redis 负责的事情更纯粹，所以代码也较好理解易读很多，我们就以源码解读的方式为主。
 
 需要注意的是：**redis 对外暴露的接口有一个就是 Hash，但是 Hash 内部实现是 ziplist + dict，数据量不大的时候使用 ziplist，数据量大了就采用 dict。所以下面我们看代码，直接用 Set 来讲解方便点（然鹅 Set 内部实现是 intSet + dict，所以跑 demo 的时候需要用 string，不能是 int）**
 
-首先是 redis 中和 dict 相关的几个比较重要的数据结构(因为功能纯粹，redis 中类实现简单很多，所以这里可以微观一点来看了)  
+首先是 redis 中和 dict 相关的几个比较重要的数据结构  
 1. dickType —— 通过自定义的方式，让 dict 可以支持任何数据结构的 key 和 value
 ```
 typedef struct dictType {
@@ -617,7 +618,7 @@ typedef struct dictht {
 * sizemask 计算 hashkey 到 entry 用的，恒等于 size-1。和上面说的 v8 做法一致  
 * used 目前 hashTable 中已有的元素数量，可以与 size 计算出来 loadFactor  
 
-4. dictEntry —— 链表中每个节点的数据结构
+4. dictEntry —— 链表中每个节点的数据结构(redis 不像 v8，并没有把链表放到连续内存中去)
 ```
 typedef struct dictEntry {
     void *key;
@@ -641,8 +642,9 @@ typedef struct dictEntry {
 * 迁移数据 —— 拷贝/移动成本、对所有 key 进行 hash 重算
 
 redis 作为 server 端服务，追求的快速的响应时间，越快越好，但**如果某次请求，命中了 rehash，那意味着会增大单个请求响应时间，这是不能接受的**。  
-所以 redis 的做法，是将可能的单次较长的 rehash 时间，打散开，平均到每个请求中去，下面看具体的实现。  
-我们如下的方式操作 redis  
+所以 redis 的做法，是将可能的单次较长的 rehash 时间，打散开，平均到每个请求中去，下面看具体的实现。
+
+实战开始，我们如下的方式操作 redis  
 ![操作步骤](./assets/16.png)
 
 然后可以得到这样的结果，我整理了一下  
@@ -762,7 +764,7 @@ dictEntry *dictAddRaw(dict *d, void *key, dictEntry **existing)
 4⃣️、5⃣️将新的链表节点添加到链表的首位  
 6⃣️将 key 保存到链表节点上  
 
-可以结合下面的图来看一下  
+可以结合下面的图来看一下插入d时结构的变化  
 ![](./assets/17.png)  
 ![](./assets/18.png)  
 ![](./assets/19.png)  
