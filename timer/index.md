@@ -22,13 +22,15 @@ console.log('利利吨吨吨');
 主要有三个环节:  
 1. 存放 callback
 2. 启动一个倒计时
-3. 倒计时结束，取出存好的 callback，RUN！  
+3. 倒计时结束，取出存好的 callback，RUN！
+
 *BTW: JS 中定时器这么方便，不仅仅是 v8 的功劳，还需要执行环境(eg: chrome、node)给予支持。如果用 d8 去调试，会发现 setTimeout 并没有定时执行。*
 
 核心需要解决1，2两个问题，先看存放 callback，这里总结一下存放的特点:   
 - 上层设置定时任务的顺序是不确定的，而最终的执行是有顺序的，这里涉及到排序行为
 - 设置定时器的动作可能是多次的  
 **满足由上条件，我们可以使用一个小根堆的数据结构来存放 callback。**
+
 *BTW: 也有一种时间轮的方案，libco 中采取时间轮方案。*
 
 那么该如何启动一个倒计时的钟摆呢？**从编程语言层面是没有倒计时相关 api 的**，还好操作系统内核给了我们一些解决方案。  
@@ -87,16 +89,17 @@ A1: 不过我们可以用其他函数代替，比如 setitimer *(精度为毫秒
 Q2: 无法多次调用 alrm
 A2: 我们需要包装一层，处理多次调用的情况。
 
-针对以上两个问题解法，这里有个改为 setitimer 优化版本，可见[这里](./example/setitimer/main.cc)。  
+不过上面两个个问题还算好解决，针对以上两个问题解法，这里有个改为 setitimer 优化版本，可见[这里](./example/setitimer/main.cc)。  
 结果如下图  
 ![setitimer 执行结果](./assets/2.png)
+可以看到**精度提高了**，并且**支持了多次调用**。
 
 但是别高兴的太早！问题还没有结束！  
 Q3: 多线程情况下怎么办？  
-A3: 信号在多线程下就是不灵活，一般做法需要用单独的线程去监听信号，其他线程屏蔽，写起来很麻烦。
+A3: 信号在多线程下就是不灵活，一般做法需要用单独的线程去监听信号，其他线程屏蔽，写起来很麻烦。  
 
 Q4: 信号可靠性？无论是 alrm 还是 setitimer 都是发送非实时信号。  
-A4: ？？？这太致命了，虽然是概率性的，但是总有在机场等艘船的感觉。
+A4: ？？？这太致命了，虽然是概率性的，但是总有在机场等艘船的感觉。  
 
 总结一下: 使用信号整体问题较多，虽然我们尝试了一些解决方案，但是还是会存在无解的问题，所以这里也没有真实使用信号的例子。
 
@@ -104,10 +107,10 @@ A4: ？？？这太致命了，虽然是概率性的，但是总有在机场等�
 针对刚刚的Q1到Q4，根本性在于 alrm 和 setitmer 都不够完善，为此 POSIX Timer 相关函数提供了解决方案。这一小节，我们主要看一下 POSIX Timer 相关函数，都是如何解决刚刚那些问题的。
 
 1. 精度问题
-POSIX Timer 支持程度更高，支持到纳秒级别
+POSIX Timer 支持程度更高，支持到纳秒级别。  
 
 2. 无法多次调用
-一个进程可以多次创建 Timer，相互独立
+一个进程可以多次创建 Timer，相互独立。  
 ```
 #include <unistd.h>
 #include <stdio.h>
@@ -157,24 +160,25 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 ```
-可以看到这里并不需要自己去处理多次调用，直接走创建定时器，设置定时器的流程就行。  
+**可以看到这里并不需要自己去处理多次调用，直接走创建定时器，设置定时器的流程就行。**  
 
 3. 多线程
 POSIX Timer 提供了默认能力，当定时器结束的时候，可以启动线程执行对应的函数。而且在 Linux 下，还扩展提供了往指定线程发送信号的能力。  
 
 4. 信号可靠性
-POSIX Timer 也可以采用信号，不过不再局限于非实时信号，可以选择实时信号；而且还多了线程的方式。  
+POSIX Timer 也可以指定信号，不过不再局限于非实时信号，可以选择实时信号，🛫️。  
 
 针对 POSIX Timer 的调用，下面画了一张图  
 ![POSIX Timer 调用相关](./assets/3.png)  
 具体函数使用、结构等可以看官方文档，这里也给了一个简易封装的例子[posix 封装为 setTimeout](./example/posix/main.cc)。  
+
 *BTW: 其实本质上 POSIX Timer 也是信号方案，可以观察进程信息中信号捕获。SIGEV_THREAD 模式下，会启动一个辅助线程，然后也是监听到 SIGTIMER 信号，再做后续处理，源码可见[https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/timer_routines.c.html](https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/timer_routines.c.html)。*
 
 稍微总结一下，POSIX Timer 的方案，相比较之前已经完善了很多，不过还有一些缺点。  
 1. 封装处理较为麻烦
 2. 必须依赖 librt
 
-使用该方案的开源项目有 gperftools，核心的代码位置在[https://github.com/greatmazinger/gperftools/blob/81d8d2a9e7f941a2051781fd0fe62c683c32f1ef/src/profile-handler.cc#L289](https://github.com/greatmazinger/gperftools/blob/81d8d2a9e7f941a2051781fd0fe62c683c32f1ef/src/profile-handler.cc#L289)。  
+使用该方案的开源项目有 gperftools，核心的代码位置在[https://github.com/gperftools/gperftools/blob/master/src/profile-handler.cc#L282](https://github.com/gperftools/gperftools/blob/master/src/profile-handler.cc#L282)。  
 封装方式和上文中的例子差不多，只是模式不一样，这里就不详细讲解了。
 
 ## 多路复用
@@ -297,6 +301,7 @@ void epoll_reactor::update_timeout()
 
 4. 启动 epoll_wait
 5. 收到 IO 事件，从 timer_queue 中判断过期任务
+
 这两步的代码位置太过相近，就放一起来说了。  
 ```
 // epoll_reactor.hpp
@@ -416,7 +421,7 @@ virtual void get_ready_timers(op_queue<operation>& ops)
 op_queue 会在 scheduler.ipp 内进行执行。
 
 以上就是 boost 中的异步定时器执行分解，感兴趣的同学也可以自己下源码来学习。  
-*BTW: libevent 中定时任务做法与 boost 基本一致，chromium 底层的 message_pump 也有使用 libevent*
+*BTW: libevent 中定时任务做法与 boost 基本一致，chromium 底层的 message_pump 也有使用 libevent。*
 
 ## 总结
 我们了解到需要实现一个定时器/定时任务，重点需要两块：  
@@ -425,5 +430,6 @@ op_queue 会在 scheduler.ipp 内进行执行。
 2. 调用操作系统提供的定时能力  
 我们分析了「信号」「POSIX Timer」「多路复用」，信号 pass，后二者中更推荐多路复用一些。  
 分析了 boost asio 的源码，学习了多路复用能力用在定时方面的解决办法。  
+
 如果你还想了解的更多，可以学习 libevent、libco、chromium 中定时器方面采取的方案。  
 欢迎一起讨论研究～  
