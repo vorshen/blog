@@ -48,6 +48,7 @@ Code 对象非常的重要，这个就是 v8 中函数执行的关键，v8 相�
 > Code describes objects with on-the-fly generated machine code.  
 >
 > JSFunctions are pairs (context, function code), sometimes also called closures.  
+
 JSFunction(v8 内数据类型) 相比较 JSObject 重大的差异也就是多了 code 属性，这也就是 Function 可以执行，而 Object 无法执行的原因。  
 
 其实我们将上面列子中的 js 代码，编译成字节码，也可以看出来整个文本可以执行的原因。  
