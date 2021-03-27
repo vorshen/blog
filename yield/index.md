@@ -4,7 +4,9 @@
 # Prerequisites
 yield 英文直译有着「提供」、「退让」的意思，先了解直译，对后面内容理解有帮助。  
 
-本文谈一些思想理解，不会详细描述 api 怎么用，所以完全不了解 yield 的同学，可以先看一下[https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield)了解 api 使用情况。  
+本文主要谈一些我的思想理解，不会详细描述 api 怎么用，所以完全不了解 yield 的同学，可以先看一下 api 使用文档稍微了解一下。  
+- javascript yield [https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield)
+- c++ yield [https://zh.cppreference.com/w/cpp/thread/yield](https://zh.cppreference.com/w/cpp/thread/yield)
 
 # yield 在 javascript 中
 我最早在项目中接触 yield 是因为项目用了 koa，但后面 koa2 将 yield 全面替换为 async、await，当时我以为 yield 是 async、await 的中间临时方案，或者说 async、await 是 yield 的语法糖，其实并不能这么简单的去看。
