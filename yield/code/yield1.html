@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function* main() {
+            yield console.log("利利准备");
+            yield* drink();
+            yield console.log("利利喝不动了");
+        }
+
+        function* drink() {
+            yield console.log("利利吨吨吨");
+            yield new Promise(function(resolve, reject) {
+                setTimeout(function() {
+                    console.log('过了 3s');
+                    resolve();
+                }, 3000);
+            });
+        }
+
+        function run(gen) {
+            const t = gen.next();
+            const { value, done } = t;
+            if (done) {
+                console.log('End');
+                return;
+            }
+            
+            if (value instanceof Promise) {
+                value.then((e) => run(gen))
+            } else {
+                run(gen)
+            }
+        }
+
+        const gen = main();
+        run(gen);
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        function* getValue() {
+            let list = [1, 2, 3, 4, 5];
+            for (let i = 0; i < list.length; i++) {
+                yield list[i];
+            }
+        }
+
+        const gen = getValue();
+        let t;
+        while (t = gen.next(), !t.done) {
+            console.log(t.value);
+        }
+
+        for (t of getValue()) {
+            console.log(t);
+        }
+    </script>
+</body>
+</html>
