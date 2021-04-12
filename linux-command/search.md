@@ -66,3 +66,25 @@ which gcc
 像我机器上就并不是系统自带的 /bin/gcc，而是 devtoolset 的路径。  
 
 # 特定的查询文件 —— whereis
+这节主要是配合上一节，上一节我们用了 which gcc 为例，可以看到全局下执行的 gcc 命令来自于哪里，哪怕有多个。但是当有多个情况下，如果我们把路径全部输出出来，那就得用 whereis 了:
+```
+whereis gcc
+
+结果
+gcc: /usr/bin/gcc /usr/lib/gcc /usr/libexec/gcc /opt/rh/devtoolset-8/root/usr/bin/gcc /usr/share/man/man1/gcc.1.gz
+```
+这里还查到了一个 /usr/share/man/man1/gcc.1.gz 结果，因为 whereis 不仅仅可以查找二进制执行文件，也可以查找 man 说明文件，当然我们可以通过参数指定类型。  
+- -b 只查找二进制文件
+- -m 只查找说明文件
+
+# 查找文件内容 —— grep
+刚刚我们说的，都是按文件名、或者按文件路径查询，用的还很多的，就是查找文件里面的内容，也就是 grep，比如查询一个服务是否开启:
+```
+ps -aux | grep nginx
+```
+grep 可以查找文件或标准输入流中匹配的内容，一般来说有如下常用的参数:
+- -i 忽略大小写  
+- -c 统计匹配的行数
+- -E 采取正则的方式
+- -C <number> 不仅仅展示匹配的行，并且额外展示前后 number 行，方便查看上下文
+- -r 对目录采取递归检测
