@@ -36,10 +36,11 @@ b: 10
 
 最后结合输出就理解了 reinterpret 的作用。  
 
-了解了一下用法，我们不难发现，他的使用场景真的很少，而且风险非常的高，可谓是 reinterpret_cast 大胆用，Segmentation fault 永相随。  
+了解了一下用法，我们不难发现，它的使用场景真的很少，而且风险非常的高，可谓是 reinterpret_cast 大胆用，Segmentation fault 永相随。  
 
 [https://zh.cppreference.com/w/cpp/language/reinterpret_cast](https://zh.cppreference.com/w/cpp/language/reinterpret_cast) 里介绍了一些用法，但也都是有点强行使用的味道，不过《Effective C++》里面描述了一种用法:  
 > 针对原始内存（raw memory）写出一个调试用的分配器。  
+
 其实就是针对自定义的 operator new 和 operator delete 通过 reinterpret_cast 转换 ptr 和 int 类型计算偏移增加一个签名，检测内存合法性。
 
 最终的建议还是能不用就别用。
