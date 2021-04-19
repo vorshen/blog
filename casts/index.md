@@ -90,6 +90,6 @@ int main(int argc, char* argv[]) {
 
 # 新式转型
 新式转型就是 C++ 的语法了，并且区分了四种类型，我们一一来说下。  
-## ![const_cast](./const_cast.md)
+## [const_cast](./const_cast.md)
 
 ## reinterpret_cast 
