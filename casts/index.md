@@ -93,3 +93,5 @@ int main(int argc, char* argv[]) {
 ## [const_cast](./const_cast.md)
 
 ## [reinterpret_cast](./reinterpret_cast.md) 
+
+## [static_cast](./static_cast.md)
