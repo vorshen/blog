@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 This is Base out.
 This is Derive out.
 ```
-指针也是同理，也比较好理解。注意不能是 virtual 方法；直接用非引用类型来转换也会报错，比如下:
+指针也是同理，也比较好理解。注意不能是 virtual 方法；直接用值类型来转换也会报错，比如下:
 ```
     Base b1;
     static_cast<Derive>(b1).out();
