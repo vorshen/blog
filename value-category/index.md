@@ -196,12 +196,12 @@ main end
 这两者是混合类别，相当于是逻辑总结层面了，核心便是将上面说的特性组合一下。一般来说一个值究竟是什么类别，还是用 lvalue,prvalue,xvalue 来区分。  
 
 不过极客时间吴咏炜老师有列得另一个纬度看左值右值的图，如下，这个我觉得挺清晰的。  
-![../assets/2.jpg](../assets/2.jpg)  
+![./assets/2.jpg](./assets/2.jpg)  
 
 # 总结
 文章目的主要是梳理一下这块的知识点，因为这里比较绕，但是作为基础知识又很重要。描述的感觉很多地方还是不清晰，有空回来改改完善完善。
 
-参考资料:
+参考资料:  
 [https://zh.cppreference.com/w/cpp/language/value_category](https://zh.cppreference.com/w/cpp/language/value_category)  
 [https://time.geekbang.org/column/article/169268](https://time.geekbang.org/column/article/169268)  
 [https://zhuanlan.zhihu.com/p/107445960](https://zhuanlan.zhihu.com/p/107445960)
