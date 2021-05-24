@@ -95,3 +95,5 @@ int main(int argc, char* argv[]) {
 ## [reinterpret_cast](./reinterpret_cast.md) 
 
 ## [static_cast](./static_cast.md)
+
+## [dynamic_cast](./dynamic_cast.md)
