@@ -36,3 +36,10 @@ Release:	20.04
 Codename:	focal
 ```
 虽然很好用，但是注意，可能某些系统没有 lsb_release，需要安装一下。
+```
+// RedHat
+yum install -y redhat-lsb
+
+// debian
+apt-get install lsb_release
+```
