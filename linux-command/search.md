@@ -57,6 +57,19 @@ sudo find /var/log -amin -101
 sudo find /var/log -mmin +10
 ```
 
+## 嵌套层级目录查询
+我们前面说到可以查询目录，但如果想查询嵌套层级的目录，用 name + type 是不行的，会提示报错：  
+```
+root@bf2fce72ef7d:/# find / -type d -name "systemd/system"
+find: warning: '-name' matches against basenames only, but the given pattern contains a directory separator ('/'), thus the expression will evaluate to false all the time.  Did you mean '-wholename'?
+```
+主要是 -name 不支持 directory separator，我们要用如下的方式：
+```
+root@bf2fce72ef7d:/# find / -type d -wholename "*/systemd/system"
+/usr/lib/systemd/system
+/etc/systemd/system
+```
+
 # 查询命令在哪 —— which
 因为 which 查询的是 $PATH 路径下的各个目录，所以它可以用来查询我们全局执行的命令究竟来自哪里。  
 比如一般的多 gcc 版本我们可能采用 devtoolset 来共存切换版本(docker 的方式更佳)，此时我们想确认 gcc 来自于哪里就可以:
