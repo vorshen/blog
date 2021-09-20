@@ -15,5 +15,5 @@ netstat -atunp
 -a 显示所有连线中的 Socket  
 -t tcp 协议  
 -u udp 协议  
--n 直接使用IP地址
+-n 直接使用IP地址  
 -p 显示对应的程序
