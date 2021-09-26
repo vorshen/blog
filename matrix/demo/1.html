@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+
+        const MIN_X = 0;
+        const MIN_Y = 0;
+        const MAX_X = 800;
+        const MAX_Y = 600;
+        let speedX = 5;
+        let speedY = 5;
+        let x = 0;
+        let y = 0;
+
+        function move() {
+            ctx.clearRect(MIN_X, MIN_Y, MAX_X, MAX_Y);
+            ctx.beginPath();
+            ctx.rect(x, y, 50, 50);
+            ctx.fill();
+            ctx.closePath();
+
+            x += speedX;
+            y += speedY;
+            if (x < MIN_X || x > MAX_X) {
+                speedX *= -1;
+            }
+            if (y < MIN_Y || y > MAX_Y) {
+                speedY *= -1;
+            }
+
+            requestAnimationFrame(move);
+        }
+
+        requestAnimationFrame(move);
+    </script>
+</body>
+</html>

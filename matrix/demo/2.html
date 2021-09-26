@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+
+        let speedX = 5;
+        let speedY = 5;
+        // middle
+        let x = 400;
+        let y = 300;
+        let width = 50;
+        let height = 50;
+        let count = 0;
+
+        function scale() {
+            ctx.clearRect(0, 0, 800, 600);
+            ctx.beginPath();
+            ctx.rect(x - width / 2, y - height / 2, width, height);
+            ctx.fill();
+            ctx.closePath();
+
+            width += speedX;
+            height += speedY;
+            if (count++ == 100) {
+                speedX *= -1;
+                speedY *= -1;
+                count = 0;
+            }
+
+            requestAnimationFrame(scale);
+        }
+
+        requestAnimationFrame(scale);
+    </script>
+</body>
+</html>

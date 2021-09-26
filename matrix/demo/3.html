@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+
+        const DEG_TO_RAD = Math.PI / 180; // 角度转弧度
+        const speed = 3; // 每帧逆时针旋转 3 度
+        const a = [-50, 50];
+        const b = [50, 50];
+        const c = [50, -50];
+        const d = [-50, -50];
+        const originX = 400;
+        const originY = 300;
+
+        function rotate() {
+            ctx.clearRect(0, 0, 800, 600);
+            drawRect();
+
+            requestAnimationFrame(rotate);
+        }
+
+        function drawRect() {
+            const sin = Math.sin(speed * DEG_TO_RAD);
+            const cos = Math.cos(speed * DEG_TO_RAD);
+
+            rotate(a, sin, cos);
+            rotate(b, sin, cos);
+            rotate(c, sin, cos);
+            rotate(d, sin, cos);
+
+            // 需要将原点坐标系转为画布上位置
+            ctx.beginPath();
+            ctx.moveTo(a[0] + originX, a[1] + originY);
+            ctx.lineTo(b[0] + originX, b[1] + originY);
+            ctx.lineTo(c[0] + originX, c[1] + originY);
+            ctx.lineTo(d[0] + originX, d[1] + originY);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function rotate(p, sin, cos) {
+            const tx = p[0];
+            const ty = p[1];
+
+            p[0] = tx * cos - ty * sin;
+            p[1] = ty * cos + tx * sin;
+        }
+
+        requestAnimationFrame(scale);
+    </script>
+</body>
+</html>

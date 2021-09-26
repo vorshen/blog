@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="./matrix.js"></script>
+    <script src="./point.js"></script>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+
+        const DEG_TO_RAD = Math.PI / 180; // 角度转弧度
+
+        const a = new Point(-50, 50);
+        const b = new Point(50, 50);
+        const c = new Point(50, -50);
+        const d = new Point(-50, -50);
+        const originX = 400;
+        const originY = 300;
+        const radius = -80;
+        const degree = 3;
+
+        // 生成三个矩阵
+        const translateMatrix = new Matrix();
+        translateMatrix.translate(radius, radius);
+        const rotateMatrix = new Matrix();
+        rotateMatrix.rotate(degree);
+        const scaleMatrix = new Matrix();
+        scaleMatrix.scale(1.001, 1.001);
+
+        function draw() {
+            ctx.clearRect(0, 0, 800, 600);
+            drawRect();
+
+            requestAnimationFrame(draw);
+        }
+
+        function drawRect() {
+            const cloneA = a.clone();
+            const cloneB = b.clone();
+            const cloneC = c.clone();
+            const cloneD = d.clone();
+
+            cloneA.apply(translateMatrix);
+            cloneA.apply(rotateMatrix);
+            cloneA.apply(scaleMatrix);
+
+            cloneB.apply(translateMatrix);
+            cloneB.apply(rotateMatrix);
+            cloneB.apply(scaleMatrix);
+
+            cloneC.apply(translateMatrix);
+            cloneC.apply(rotateMatrix);
+            cloneC.apply(scaleMatrix);
+
+            cloneD.apply(translateMatrix);
+            cloneD.apply(rotateMatrix);
+            cloneD.apply(scaleMatrix);
+
+            rotateMatrix.rotate(degree * DEG_TO_RAD);
+            scaleMatrix.scale(1.001, 1.001);
+            
+            // 需要将原点坐标系转为画布上位置
+            ctx.beginPath();
+            ctx.moveTo(cloneA.x + originX, cloneA.y + originY);
+            ctx.lineTo(cloneB.x + originX, cloneB.y + originY);
+            ctx.lineTo(cloneC.x + originX, cloneC.y + originY);
+            ctx.lineTo(cloneD.x + originX, cloneD.y + originY);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        requestAnimationFrame(draw);
+    </script>
+</body>
+</html>
