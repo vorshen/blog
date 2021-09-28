@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+    <script src="./line.js"></script>
+	<canvas id="c" class="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+	<script>
+		const c = document.getElementById('c');
+		const ctx = c.getContext('2d');
+		const lines = [];
+        const RED = '#ff0000';
+
+        const { left: offsetX, top: offsetY } = c.getBoundingClientRect();
+
+		let startX;
+		let startY;
+        function handleDown(x, y) {
+            startX = x;
+            startY = y;
+        }
+
+        function handleUp(endX, endY) {
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            ctx.closePath();
+
+            lines.push(new Line({
+            	x: startX,
+            	y: startY
+            }, {
+            	x: endX,
+            	y: endY
+            }));
+
+            check();
+            render();
+        }
+
+		c.onmousedown = function(e) {
+            handleDown(e.clientX - offsetX, e.clientY - offsetY);
+        };
+
+        c.onmouseup = function(e) {
+            handleUp(e.clientX - offsetX, e.clientY - offsetY);
+        };
+
+        c.ontouchstart = function(e) {
+            handleDown(
+                e.touches[0].clientX - offsetX,
+                e.touches[0].clientY - offsetY
+            );
+        };
+
+        c.ontouchend = function(e) {
+            handleUp(
+                e.changedTouches[0].clientX - offsetX,
+                e.changedTouches[0].clientY - offsetY
+            );
+        }
+
+        function check() {
+        	const role = lines[lines.length - 1];
+
+        	for(let i = 0; i < lines.length - 1; i++) {
+        		if(role.isCrossLine(lines[i])) {
+                    role.setColor(RED);
+                    lines[i].setColor(RED);
+        		}
+        	}
+        }
+
+        function drawLine(line) {
+            ctx.beginPath();
+        	ctx.strokeStyle = line.color;
+        	ctx.moveTo(line.p0.x, line.p0.y);
+        	ctx.lineTo(line.p1.x, line.p1.y);
+        	ctx.stroke();
+        	ctx.closePath();
+        }
+
+        function render() {
+    		ctx.clearRect(0, 0, 800, 600);
+
+    		lines.forEach(function(line) {
+    			drawLine(line);
+    		});
+        }
+
+        render();
+	</script>
+</body>
+</html>
