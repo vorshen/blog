@@ -32,10 +32,10 @@
             const sin = Math.sin(speed * DEG_TO_RAD);
             const cos = Math.cos(speed * DEG_TO_RAD);
 
-            rotate(a, sin, cos);
-            rotate(b, sin, cos);
-            rotate(c, sin, cos);
-            rotate(d, sin, cos);
+            rotatePoint(a, sin, cos);
+            rotatePoint(b, sin, cos);
+            rotatePoint(c, sin, cos);
+            rotatePoint(d, sin, cos);
 
             // 需要将原点坐标系转为画布上位置
             ctx.beginPath();
@@ -47,7 +47,7 @@
             ctx.closePath();
         }
 
-        function rotate(p, sin, cos) {
+        function rotatePoint(p, sin, cos) {
             const tx = p[0];
             const ty = p[1];
 
