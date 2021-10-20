@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>选择精度: <input id="input" type="range" name="precision" min="3" max="30"></div>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script>
+        const input = document.getElementById('input');
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const center = {
+            x: 400,
+            y: 300
+        };
+        const radius = 100;
+
+        function drawCircle() {
+            ctx.beginPath();
+            ctx.strokeStyle = 'black';
+            ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawFill(precision) {
+            const step = 2 * Math.PI / precision;
+            let deg = 0;
+            const innerR = radius - 1;
+
+            ctx.fillStyle = '#fc48a1';
+
+            for (let i = 0; i < precision; i++) {
+                ctx.beginPath();
+                ctx.moveTo(center.x, center.y);
+                ctx.lineTo(center.x + Math.cos(deg) * innerR, center.y + Math.sin(deg) * innerR);
+                deg += step;
+                ctx.lineTo(center.x + Math.cos(deg) * innerR, center.y + Math.sin(deg) * innerR);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, 800, 600);
+            drawCircle();
+            drawFill(input.value);
+        }
+
+        input.addEventListener('change', () => {
+            draw();
+        });
+
+        draw();
+    </script>
+</body>
+</html>

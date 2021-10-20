@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="c" width="800" height="600" style="background-color: aliceblue;"></canvas>
+    <script src="./obb.js"></script>
+    <script src="./aabb.js"></script>
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+
+        const obb = new OBB(200, 300, 50, 100, -0.5);
+        const points = obb.getPoints();
+
+        const aabb = new AABB(
+            Math.min(points[0], points[2], points[4], points[6]),
+            Math.min(points[1], points[3], points[5], points[7]),
+            Math.max(points[0], points[2], points[4], points[6]) - Math.min(points[0], points[2], points[4], points[6]),
+            Math.max(points[1], points[3], points[5], points[7]) - Math.min(points[1], points[3], points[5], points[7])
+        );
+
+        function drawAABB(obb) {
+            const points = obb.getPoints();
+            ctx.beginPath();
+            ctx.strokeStyle = 'red';
+            ctx.rect(aabb.x, aabb.y, aabb.width, aabb.height);
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawOBB(obb) {
+            const points = obb.getPoints();
+            ctx.beginPath();
+            ctx.moveTo(points[0], points[1]);
+            ctx.lineTo(points[2], points[3]);
+            ctx.lineTo(points[4], points[5]);
+            ctx.lineTo(points[6], points[7]);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        drawAABB(obb);
+        drawOBB(obb);
+
+        canvas.addEventListener('mousedown', function (e) {
+            handleMousedown(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        });
+
+        function handleMousedown(x, y) {
+            if (obb.contains({x, y})) {
+                alert('命中 obb');
+                return;
+            }
+
+            if (aabb.contains({x, y})) {
+                alert('命中 aabb');
+                return;
+            }
+
+            alert('没有命中');
+        }
+    </script>
+</body>
+</html>
