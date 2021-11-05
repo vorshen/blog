@@ -1,0 +1,69 @@
+Class <unnamed struct>
+   size=8 align=4
+   base size=8 base align=4
+<unnamed struct> (0x0x7f967eb52ae0) 0
+
+Class <unnamed struct>::<unnamed union>
+   size=4 align=4
+   base size=4 base align=4
+<unnamed struct>::<unnamed union> (0x0x7f967eb52ba0) 0
+
+Class <unnamed struct>
+   size=8 align=4
+   base size=8 base align=4
+<unnamed struct> (0x0x7f967eb52b40) 0
+
+Class <unnamed struct>
+   size=16 align=8
+   base size=16 base align=8
+<unnamed struct> (0x0x7f967eb52c00) 0
+
+Class <unnamed struct>
+   size=16 align=8
+   base size=16 base align=8
+<unnamed struct> (0x0x7f967eb52c60) 0
+
+Class _IO_marker
+   size=24 align=8
+   base size=24 base align=8
+_IO_marker (0x0x7f967eb52cc0) 0
+
+Class _IO_FILE
+   size=216 align=8
+   base size=216 base align=8
+_IO_FILE (0x0x7f967eb52d20) 0
+
+Class <unnamed struct>
+   size=32 align=8
+   base size=32 base align=8
+<unnamed struct> (0x0x7f967eb52d80) 0
+
+Vtable for Base
+Base::_ZTV4Base: 4 entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI4Base)
+16    (int (*)(...))Base::func1
+24    (int (*)(...))Base::func2
+
+Class Base
+   size=16 align=8
+   base size=12 base align=8
+Base (0x0x7f967eb52de0) 0
+    vptr=((& Base::_ZTV4Base) + 16)
+
+Vtable for Derive
+Derive::_ZTV6Derive: 5 entries
+0     (int (*)(...))0
+8     (int (*)(...))(& _ZTI6Derive)
+16    (int (*)(...))Base::func1
+24    (int (*)(...))Derive::func2
+32    (int (*)(...))Derive::func3
+
+Class Derive
+   size=16 align=8
+   base size=16 base align=8
+Derive (0x0x7f967e9e8208) 0
+    vptr=((& Derive::_ZTV6Derive) + 16)
+  Base (0x0x7f967eb52f00) 0
+      primary-for Derive (0x0x7f967e9e8208)
+
