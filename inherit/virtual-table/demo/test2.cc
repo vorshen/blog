@@ -1,4 +1,5 @@
 #include <stdio.h>
+#pragma pack(4)
 
 class Base1 {
 public:

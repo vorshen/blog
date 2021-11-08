@@ -1,0 +1,55 @@
+Class <unnamed struct>
+   size=8 align=4
+   base size=8 base align=4
+<unnamed struct> (0x0x7ff4df6afae0) 0
+
+Class <unnamed struct>::<unnamed union>
+   size=4 align=4
+   base size=4 base align=4
+<unnamed struct>::<unnamed union> (0x0x7ff4df6afba0) 0
+
+Class <unnamed struct>
+   size=8 align=4
+   base size=8 base align=4
+<unnamed struct> (0x0x7ff4df6afb40) 0
+
+Class <unnamed struct>
+   size=16 align=8
+   base size=16 base align=8
+<unnamed struct> (0x0x7ff4df6afc00) 0
+
+Class <unnamed struct>
+   size=16 align=8
+   base size=16 base align=8
+<unnamed struct> (0x0x7ff4df6afc60) 0
+
+Class _IO_marker
+   size=24 align=8
+   base size=24 base align=8
+_IO_marker (0x0x7ff4df6afcc0) 0
+
+Class _IO_FILE
+   size=216 align=8
+   base size=216 base align=8
+_IO_FILE (0x0x7ff4df6afd20) 0
+
+Class <unnamed struct>
+   size=32 align=8
+   base size=32 base align=8
+<unnamed struct> (0x0x7ff4df6afd80) 0
+
+Class Foo
+   size=4 align=2
+   base size=4 base align=2
+Foo (0x0x7ff4df6afde0) 0
+
+Class Bar1
+   size=24 align=2
+   base size=24 base align=2
+Bar1 (0x0x7ff4df6afe40) 0
+
+Class Bar2
+   size=24 align=2
+   base size=24 base align=2
+Bar2 (0x0x7ff4df6afea0) 0
+
