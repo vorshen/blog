@@ -3,7 +3,7 @@
 
 在正式开始之前，先简单的说一下编译器的默认行为，因为本文说的是构造函数，但有些类大家会不写构造函数，其实本质上是编译器帮你声明了。  
 下面用 《Effective C++》 中的例子也表明一下:  
-```
+```cpp
 ////////////////// 真实编写的代码
 class Empty {};
 
@@ -32,7 +32,7 @@ public:
 
 简单展开说一下:  
 使用初始化列表代替赋值也算一个基本的常识了，不了解的同学看下下面这段代码应该就了解了:  
-```
+```cpp
 class Foo {
 public:
     Foo() {
@@ -109,7 +109,7 @@ Copy Operator
 - 如果派生类的拷贝，别忘了基类。
 
 编译器给你生成的代码，一般都是最基本的，我们看下面这个例子:  
-```
+```cpp
 class Foo {};
 
 class Yori {
@@ -141,7 +141,7 @@ Address: 0x7fff682dc25f
 派生类的拷贝不要忘记基类就很简单了，时刻牢记，**如果要拷贝一个对象，务必将对象中的所有东西都进行拷贝**。
 
 刚刚我们说的是本身可以拷贝，还有可能是无法拷贝的对象，这里的代表就是 `unique_ptr` 指针。  
-```
+```cpp
 class Foo {};
 
 int main(int argc, char* argv[]) {
@@ -166,7 +166,7 @@ error: use of deleted function ‘std::unique_ptr<_Tp, _Dp>::unique_ptr(const st
 
 ## 拷贝构造函数和移动构造函数的规范写法
 拷贝构造函数
-```
+```cpp
 class Foo {
 public:
     Foo(const Foo& foo) {}
@@ -176,7 +176,7 @@ public:
 其次最好加上 const，因为避免修改到实参。
 
 移动构造函数
-```
+```cpp
 class Foo {
 public:
     Foo(Foo&& foo) {}
